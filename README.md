@@ -86,14 +86,23 @@ restarting for that.
 
 ## Uninstall
 
-Remove the widget from its panel first (right-click it, *Remove*), then:
+First take the widget out of its panel. While nothing is pending it takes no
+space, so there is nothing to right-click; make it visible:
 
 ```bash
+echo test > ~/.cache/reboot-sentinel-test
+```
+
+Within 30 seconds the icon appears: right-click it and choose *Remove*. Then:
+
+```bash
+rm ~/.cache/reboot-sentinel-test
 ./install.sh --uninstall
 ```
 
-This removes the hook, then the flag script (with sudo), then the widget's
-directory. A pending `/run/reboot-required` stays until the next reboot clears
+This removes the hook, then the flag script (with sudo), then the widget:
+`kpackagetool6` removes the widget's whole directory, while the copy fallback
+removes only its own two files and says if anything else was left there. A pending `/run/reboot-required` stays until the next reboot clears
 it, and `/etc/pacman.d/hooks/` itself is left alone, as other hooks may live
 there.
 
@@ -119,12 +128,12 @@ The Target lines in the hook decide which packages flag a reboot:
 
 | Group | Targets |
 |---|---|
-| Kernels and their module packages | Arch: `linux`, `linux-lts`, `linux-zen`, `linux-hardened`, `linux-rt`, `linux-rt-lts`. Manjaro: `linux[0-9]*` (`linux612`, `linux612-nvidia`, ...). CachyOS: `linux-cachyos*` |
+| Kernels | Arch: `linux`, `linux-lts`, `linux-zen`, `linux-hardened`, `linux-rt`, `linux-rt-lts`. Manjaro: `linux[0-9]*` (`linux612`, `linux612-nvidia`, ...). CachyOS: `linux-cachyos*` (`linux-cachyos`, `linux-cachyos-nvidia-open`, ...) |
 | Firmware | `linux-firmware*` |
 | CPU microcode | `amd-ucode`, `intel-ucode` |
 | Core userspace | `systemd`, `glibc`, `dbus` |
-| GPU drivers and Wayland | `mesa`, `vulkan-radeon`, `vulkan-intel`, `nvidia*`, `egl-wayland`, `wayland` |
-| Never | `!*-headers`, `!*-docs`, `!*-dbg` |
+| GPU drivers and Wayland | `mesa`, `vulkan-radeon`, `vulkan-intel`, `egl-wayland`, `wayland`, and NVIDIA's drivers but not its tools: `nvidia`, `nvidia-lts`, `nvidia-open*`, `nvidia*-dkms`, `nvidia*-utils` |
+| Never | `!*-headers`, `!*-docs`, `!*-dbg`, `!*-debug` |
 
 pacman compares each package name with every Target as a shell glob
 (`fnmatch`), and **the last Target that matches decides**; a Target starting
@@ -156,8 +165,10 @@ checks that `VERSION`, `metadata.json` and the changelog agree, guards
   Manjaro and CachyOS package names, each expected to flag a reboot or not,
   using pacman's last-match-wins rule; Python's `fnmatch` is cross-checked
   against the C library's `fnmatch(3)`, which pacman calls, on every pair.
-- `tests/test_flag.sh`: the flag script writing and merging a scratch flag
-  file (`REBOOT_SENTINEL_FLAG`), mode 644 whatever the caller's umask.
+- `tests/test_flag.sh`: a copy of the flag script, its path changed by sed
+  to a scratch file, writing and merging the names, mode 644 whatever the
+  caller's umask, and writing nothing when no names arrive. The installed
+  script has no override: pacman passes its environment to hooks.
 - `tests/test_install.sh`: the installer against scratch homes and a scratch
   system root (`REBOOT_SENTINEL_SYSROOT`), with stand-ins for sudo,
   kpackagetool6 and pacman: what gets installed and with which modes, exactly

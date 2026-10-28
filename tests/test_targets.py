@@ -14,14 +14,26 @@ Python's fnmatch.fnmatchcase agrees with fnmatch(3) on *, ? and [...] with
 neither, and this test checks that first.
 
 The names are real: Arch and CachyOS ones from their sync databases
-(core, extra, cachyos) in October 2026, Manjaro's from its kernel and
-extramodules naming (linuxNNN, linuxNNN-<module>).
+(core, extra, cachyos) in October 2026, plus Arch's former nvidia,
+nvidia-lts and nvidia-dkms; Manjaro's from its kernel and extramodules
+naming (linuxNNN, linuxNNN-<module>); the -debug ones as Arch's debug
+repositories name them.
 """
 import fnmatch
 import pathlib
 import sys
 
 HOOK = pathlib.Path(__file__).resolve().parent.parent / "pacman" / "99-reboot-required.hook"
+
+# Every NVIDIA driver and kernel-module package must flag a reboot: those in
+# the Arch and CachyOS sync databases, and Arch's former nvidia, nvidia-lts and
+# nvidia-dkms, which the allowlist still names.
+NVIDIA_DRIVERS = [
+    "nvidia", "nvidia-lts", "nvidia-dkms", "nvidia-utils",
+    "nvidia-open", "nvidia-open-dkms", "nvidia-open-lts",
+    "nvidia-580xx-dkms", "nvidia-580xx-open-dkms", "nvidia-580xx-utils",
+    "nvidia-470xx-dkms", "nvidia-470xx-utils", "nvidia-390xx-dkms", "nvidia-390xx-utils",
+]
 
 YES, NO = True, False
 
@@ -67,7 +79,7 @@ TABLE = [
     ("linux61-headers", NO),
     ("linux612-headers", NO),
     ("linux612-rt-headers", NO),
-    # --- kernels and their module packages: CachyOS ------------------------------
+    # --- kernels and module packages: CachyOS --------------------------------
     ("linux-cachyos", YES),
     ("linux-cachyos-lts", YES),
     ("linux-cachyos-bore", YES),
@@ -116,14 +128,31 @@ TABLE = [
     ("mesa", YES),
     ("vulkan-radeon", YES),
     ("vulkan-intel", YES),
+    # NVIDIA drivers and kernel modules (the NVIDIA_DRIVERS check below)
+    ("nvidia", YES),
+    ("nvidia-lts", YES),
+    ("nvidia-dkms", YES),
     ("nvidia-utils", YES),
     ("nvidia-open", YES),
     ("nvidia-open-dkms", YES),
     ("nvidia-open-lts", YES),
     ("nvidia-580xx-dkms", YES),
+    ("nvidia-580xx-open-dkms", YES),
     ("nvidia-580xx-utils", YES),
     ("nvidia-470xx-dkms", YES),
-    ("nvidia-settings", YES),  # nvidia* takes the whole family; a harmless extra
+    ("nvidia-470xx-utils", YES),
+    ("nvidia-390xx-dkms", YES),
+    ("nvidia-390xx-utils", YES),
+    # NVIDIA packages that are not drivers
+    ("nvidia-settings", NO),
+    ("nvidia-390xx-settings", NO),
+    ("nvidia-470xx-settings", NO),
+    ("nvidia-580xx-settings", NO),
+    ("nvidia-prime", NO),
+    ("nvidia-container-toolkit", NO),
+    ("nvidia-cg-toolkit", NO),
+    ("nvidia-fake-powerd", NO),
+    ("nvidia-module-extractor", NO),
     ("egl-wayland", YES),
     ("wayland", YES),
     ("mesa-docs", NO),
@@ -135,6 +164,10 @@ TABLE = [
     ("wayland-protocols", NO),
     ("wayland-utils", NO),
     ("wayland-docs", NO),
+    # --- debug packages: Arch's debug repositories name them <package>-debug ----
+    ("glibc-debug", NO),
+    ("systemd-debug", NO),
+    ("mesa-debug", NO),
     # --- ordinary packages --------------------------------------------------------------
     ("pacman", NO),
     ("yay", NO),
@@ -238,6 +271,14 @@ def main():
         got = matches(targets, name)
         check(got == expected, f"{name}: {'flags' if expected else 'does not flag'} a reboot"
               + ("" if got == expected else f" (got {'flag' if got else 'no flag'})"))
+
+    drivers = dict(TABLE)
+    missing = [n for n in NVIDIA_DRIVERS if not (drivers.get(n) and matches(targets, n))]
+    check(not missing, f"all {len(NVIDIA_DRIVERS)} NVIDIA driver packages are in the table and flag a reboot"
+          + ("" if not missing else f" (not: {missing})"))
+    nvidia_no = [n for n, e in TABLE if n.startswith("nvidia") and not e]
+    check(len(nvidia_no) == 9 and not any(matches(targets, n) for n in nvidia_no),
+          f"the {len(nvidia_no)} NVIDIA packages that are not drivers do not flag a reboot")
 
     # Every plain Target flags at least one name in the table, so no line of
     # the list goes untested. (The exclusions are kept even where no real

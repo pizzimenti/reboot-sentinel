@@ -121,7 +121,7 @@ run_installer() {  # scenario-dir [installer args...]
     : > "$SUDO_LOG"
     : > "$KPT_LOG"
     env -u XDG_CONFIG_HOME -u XDG_DATA_HOME -u XDG_CACHE_HOME -u XDG_STATE_HOME \
-        -u REBOOT_SENTINEL_KPACKAGETOOL -u REBOOT_SENTINEL_FLAG -u FAKE_SUDO \
+        -u REBOOT_SENTINEL_KPACKAGETOOL -u FAKE_SUDO \
         HOME="$dir/home" REBOOT_SENTINEL_SYSROOT="$dir/sys" PATH="$FAKEBIN:$PATH" \
         STUB_SANDBOX="$WORK" STUB_REPO="$REPO" STUB_SUDO_LOG="$SUDO_LOG" STUB_KPT_LOG="$KPT_LOG" \
         ${INSTALL_ENV[@]+"${INSTALL_ENV[@]}"} \
@@ -231,7 +231,9 @@ run_ok "$S" --uninstall
 expect_log "$SUDO_LOG" sudo "$(sudo_rm_hook "$S")" "$(sudo_rm_flag "$S")"
 expect_log "$KPT_LOG" kpackagetool6 "--type Plasma/Applet --remove $PLASMOID_ID"
 [[ ! -e "$S/home/.local/share/plasma/plasmoids/$PLASMOID_ID" ]] || fail "uninstall left the widget's directory"
-ok "uninstall removes the hook, then the flag script (sudo), then the widget (kpackagetool6 --remove)"
+grep -qxF "  echo test > ~/.cache/reboot-sentinel-test" "$OUT" \
+    || fail "uninstall did not say how to make the idle widget visible to remove it"
+ok "uninstall removes the hook, then the flag script (sudo), then the widget (kpackagetool6 --remove), and says how to reveal the idle widget"
 
 [[ "$(snapshot "$S")" == "$before" ]] || {
     diff <(echo "$before") <(snapshot "$S") >&2 || true

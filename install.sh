@@ -60,7 +60,7 @@ case "${BASH_SOURCE[0]}" in
     */*) ROOT_DIR="${BASH_SOURCE[0]%/*}" ;;
     *) ROOT_DIR=. ;;
 esac
-ROOT_DIR="$(cd "$ROOT_DIR" && pwd)"
+ROOT_DIR="$(cd -- "$ROOT_DIR" >/dev/null && pwd)"
 VERSION="$(<"$ROOT_DIR/VERSION")"
 
 # REBOOT_SENTINEL_SYSROOT stands in for / under the two system files, and
@@ -158,8 +158,11 @@ if [[ $UNINSTALL == 1 ]]; then
     if [[ $removed == 0 ]]; then
         echo "Nothing to remove; Reboot Sentinel was not installed."
     else
-        echo "Reboot Sentinel uninstalled. If the widget is still in a panel, remove it"
-        echo "there too (right-click it, Remove)."
+        echo "Reboot Sentinel uninstalled. If the widget is still in a panel, it takes no"
+        echo "space while idle, so make it visible first:"
+        echo "  echo test > ~/.cache/reboot-sentinel-test"
+        echo "then right-click it, choose Remove, and run:"
+        echo "  rm ~/.cache/reboot-sentinel-test"
     fi
     exit 0
 fi

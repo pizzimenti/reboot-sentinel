@@ -9,8 +9,8 @@ PlasmoidItem {
     id: root
 
     // Panel widget (NOT a system-tray item — the tray's plugin registry
-    // refused to place user-installed plasmoids on this box; see README).
-    // Sits directly in the panel like the pingmonitor/wifimimo family and
+    // refused to place a per-user plasmoid on the machine it was written
+    // on; see README). Sits directly in the panel and
     // collapses to zero width when no reboot is pending. The compact icon
     // is the whole UI: clicking launches the reboot prompt directly.
     preferredRepresentation: compactRepresentation
@@ -62,7 +62,7 @@ PlasmoidItem {
     }
 
     compactRepresentation: MouseArea {
-        // Sizing mirrors the pingmonitor/wifimimo family pattern, with one
+        // Sizing follows the usual panel-widget pattern, with one
         // twist: every horizontal (or vertical) dimension collapses to 0
         // while no reboot is pending, so the idle widget occupies no panel
         // space at all. Note: Plasmoid.* attached properties are only

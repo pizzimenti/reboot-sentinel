@@ -14,17 +14,17 @@ Operation = Install
 Operation = Upgrade
 Operation = Remove
 Type = Package
-# Kernels and the module packages built for them.
-# Arch, by name:
+# Kernels. Arch, by name:
 Target = linux
 Target = linux-lts
 Target = linux-zen
 Target = linux-hardened
 Target = linux-rt
 Target = linux-rt-lts
-# Manjaro: linux612, linux612-rt, linux612-nvidia, linux612-zfs, ...
+# Manjaro: linux612, linux612-rt, and its module packages such as linux612-nvidia
 Target = linux[0-9]*
-# CachyOS: linux-cachyos, linux-cachyos-lts, linux-cachyos-bore-nvidia-open, ...
+# CachyOS: linux-cachyos, linux-cachyos-lts, and its module packages such as
+# linux-cachyos-bore-nvidia-open
 Target = linux-cachyos*
 Target = linux-firmware*
 # CPU microcode
@@ -38,14 +38,20 @@ Target = dbus
 Target = mesa
 Target = vulkan-radeon
 Target = vulkan-intel
-Target = nvidia*
 Target = egl-wayland
 Target = wayland
+# NVIDIA's drivers and kernel modules, not its tools (nvidia-settings, ...)
+Target = nvidia
+Target = nvidia-lts
+Target = nvidia-open*
+Target = nvidia*-dkms
+Target = nvidia*-utils
 # Headers, documentation and debug symbols never need a reboot on their own.
 # Keep these last.
 Target = !*-headers
 Target = !*-docs
 Target = !*-dbg
+Target = !*-debug
 
 [Action]
 Description = Flagging reboot-required packages...
