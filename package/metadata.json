@@ -1,0 +1,23 @@
+{
+    "KPlugin": {
+        "Id": "org.kde.plasma.rebootsentinel",
+        "Name": "Reboot Sentinel",
+        "EnabledByDefault": true,
+        "Description": "Tray icon that appears only when a pacman/yay transaction (kernel, systemd, firmware, ...) requires a reboot. Hover lists what triggered it; click opens the reboot prompt.",
+        "Version": "1.1.1",
+        "Category": "System Information",
+        "FormFactors": [
+            "horizontal",
+            "vertical"
+        ],
+        "Icon": "system-reboot",
+        "Authors": [
+            {
+                "Name": "Bradley Pizzimenti"
+            }
+        ],
+        "License": "MIT"
+    },
+    "KPackageStructure": "Plasma/Applet",
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

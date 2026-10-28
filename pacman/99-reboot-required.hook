@@ -1,0 +1,27 @@
+# Flags packages whose install/upgrade/remove warrants a reboot.
+# Consumed by the Reboot Sentinel plasmoid (~/Code/reboot-sentinel), which
+# watches /run/reboot-required. Edit the Target list to taste — headers are
+# explicitly excluded because they never need a reboot on their own.
+
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = linux[0-9]*
+Target = !linux[0-9]*-headers
+Target = linux-firmware*
+Target = amd-ucode
+Target = systemd
+Target = glibc
+Target = dbus
+Target = mesa
+Target = vulkan-radeon
+Target = egl-wayland
+Target = wayland
+
+[Action]
+Description = Flagging reboot-required packages...
+When = PostTransaction
+Exec = /usr/local/bin/reboot-required-flag
+NeedsTargets
