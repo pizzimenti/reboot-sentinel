@@ -1,24 +1,51 @@
 # Flags packages whose install/upgrade/remove warrants a reboot.
-# Consumed by the Reboot Sentinel plasmoid (~/Code/reboot-sentinel), which
-# watches /run/reboot-required. Edit the Target list to taste — headers are
-# explicitly excluded because they never need a reboot on their own.
+# Consumed by the Reboot Sentinel plasmoid
+# (https://github.com/pizzimenti/reboot-sentinel), which watches
+# /run/reboot-required.
+#
+# Edit the Target list to taste. pacman compares each package name with
+# every Target as a shell glob (fnmatch), and the last Target that matches
+# decides: a leading ! means "not this one". The exclusions at the end
+# therefore win over every line above them, so add new lines above them.
+# After editing the repo's copy, tests/test_targets.py checks the list.
 
 [Trigger]
 Operation = Install
 Operation = Upgrade
 Operation = Remove
 Type = Package
+# Kernels and the module packages built for them.
+# Arch, by name:
+Target = linux
+Target = linux-lts
+Target = linux-zen
+Target = linux-hardened
+Target = linux-rt
+Target = linux-rt-lts
+# Manjaro: linux612, linux612-rt, linux612-nvidia, linux612-zfs, ...
 Target = linux[0-9]*
-Target = !linux[0-9]*-headers
+# CachyOS: linux-cachyos, linux-cachyos-lts, linux-cachyos-bore-nvidia-open, ...
+Target = linux-cachyos*
 Target = linux-firmware*
+# CPU microcode
 Target = amd-ucode
+Target = intel-ucode
+# Core userspace
 Target = systemd
 Target = glibc
 Target = dbus
+# GPU drivers and the Wayland stack
 Target = mesa
 Target = vulkan-radeon
+Target = vulkan-intel
+Target = nvidia*
 Target = egl-wayland
 Target = wayland
+# Headers, documentation and debug symbols never need a reboot on their own.
+# Keep these last.
+Target = !*-headers
+Target = !*-docs
+Target = !*-dbg
 
 [Action]
 Description = Flagging reboot-required packages...

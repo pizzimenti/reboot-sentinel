@@ -2,7 +2,8 @@
 # Called by /etc/pacman.d/hooks/99-reboot-required.hook (NeedsTargets):
 # matched package names arrive on stdin, one per line, and get merged into
 # the flag file. /run is tmpfs, so the flag clears itself on reboot — no
-# cleanup path needed anywhere.
-f=/run/reboot-required
+# cleanup path needed anywhere. REBOOT_SENTINEL_FLAG overrides the path, so
+# the tests can run this without root.
+f=${REBOOT_SENTINEL_FLAG:-/run/reboot-required}
 umask 022
 { [ -f "$f" ] && cat "$f"; cat; } | sort -u > "$f.tmp" && mv "$f.tmp" "$f"

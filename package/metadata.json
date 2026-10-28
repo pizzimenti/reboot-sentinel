@@ -4,7 +4,7 @@
         "Name": "Reboot Sentinel",
         "EnabledByDefault": true,
         "Description": "Tray icon that appears only when a pacman/yay transaction (kernel, systemd, firmware, ...) requires a reboot. Hover lists what triggered it; click opens the reboot prompt.",
-        "Version": "1.1.1",
+        "Version": "1.2.0",
         "Category": "System Information",
         "FormFactors": [
             "horizontal",
