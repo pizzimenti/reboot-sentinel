@@ -15,7 +15,7 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 ok() { TESTS=$((TESTS + 1)); echo "ok $TESTS - $*"; }
 
 [[ "$(head -n 1 "$FLAG_SCRIPT")" == '#!/bin/sh' ]] || fail "the flag script is not a #!/bin/sh script"
-[[ "$(grep -c '^f=' "$FLAG_SCRIPT")" == 1 ]] && grep -qxF 'f=/run/reboot-required' "$FLAG_SCRIPT" \
+{ [[ "$(grep -c '^f=' "$FLAG_SCRIPT")" == 1 ]] && grep -qxF 'f=/run/reboot-required' "$FLAG_SCRIPT"; } \
     || fail "the flag script does not set its path once, to /run/reboot-required"
 ! grep -qE 'REBOOT_SENTINEL|\$\{f[:-]|\$\{[A-Z_]*:-/run' "$FLAG_SCRIPT" \
     || fail "the flag script takes its path from the environment"

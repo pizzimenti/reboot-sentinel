@@ -35,6 +35,13 @@ NVIDIA_DRIVERS = [
     "nvidia-470xx-dkms", "nvidia-470xx-utils", "nvidia-390xx-dkms", "nvidia-390xx-utils",
 ]
 
+# NVIDIA packages that are tools, not drivers: none may flag a reboot.
+NVIDIA_TOOLS = [
+    "nvidia-settings", "nvidia-390xx-settings", "nvidia-470xx-settings", "nvidia-580xx-settings",
+    "nvidia-prime", "nvidia-container-toolkit", "nvidia-cg-toolkit",
+    "nvidia-fake-powerd", "nvidia-module-extractor",
+]
+
 YES, NO = True, False
 
 TABLE = [
@@ -168,6 +175,7 @@ TABLE = [
     ("glibc-debug", NO),
     ("systemd-debug", NO),
     ("mesa-debug", NO),
+    ("nvidia-open-debug", NO),  # nvidia-open* would take it but for !*-debug
     # --- ordinary packages --------------------------------------------------------------
     ("pacman", NO),
     ("yay", NO),
@@ -276,9 +284,9 @@ def main():
     missing = [n for n in NVIDIA_DRIVERS if not (drivers.get(n) and matches(targets, n))]
     check(not missing, f"all {len(NVIDIA_DRIVERS)} NVIDIA driver packages are in the table and flag a reboot"
           + ("" if not missing else f" (not: {missing})"))
-    nvidia_no = [n for n, e in TABLE if n.startswith("nvidia") and not e]
-    check(len(nvidia_no) == 9 and not any(matches(targets, n) for n in nvidia_no),
-          f"the {len(nvidia_no)} NVIDIA packages that are not drivers do not flag a reboot")
+    flagged = [n for n in NVIDIA_TOOLS if drivers.get(n, True) or matches(targets, n)]
+    check(not flagged, f"all {len(NVIDIA_TOOLS)} NVIDIA tools are in the table and do not flag a reboot"
+          + ("" if not flagged else f" (not: {flagged})"))
 
     # Every plain Target flags at least one name in the table, so no line of
     # the list goes untested. (The exclusions are kept even where no real
